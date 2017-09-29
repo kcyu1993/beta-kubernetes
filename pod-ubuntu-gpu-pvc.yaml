@@ -6,6 +6,9 @@ metadata:
     name: ubuntu-gpu
 spec:
   volumes:
+  - name: site-data
+    persistentVolumeClaim:
+      claimName: pvc-nfs-mlo
   - hostPath:
       path: /usr/lib/nvidia-375/bin
     name: bin
@@ -26,3 +29,6 @@ spec:
       name: bin
     - mountPath: /usr/local/nvidia/lib
       name: lib
+    - mountPath: /mlodata1
+      name: site-data
+      subPath: mysql
