@@ -5,7 +5,7 @@ Adapted version for personal usage.
 0. Clone this repo
 1. Request an account to the support (support-icit@epfl.ch)
 2. If you plan to use a shared storage, request a volume  to the support
-3. Install and Set Up kubectl - https://kubernetes.io/docs/tasks/tools/install-kubectl/
+3. Install and Set Up [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
     * Install kubectl binary via curl (Follow the instruction).
     * `mkdir ~/.kube/`
     * `mv config ~/.kube/` where `config` is the configuration file sent by EPFL IT.
@@ -14,6 +14,7 @@ Adapted version for personal usage.
 $ kubectl get pods     
 No resources found
 ```
+5. Now we assume we are working on the folder of `pods`.
 
 ### Test: Create your first Pod (Container)
 ```sh
@@ -72,6 +73,50 @@ persistentvolumeclaim "pvc-nfs-mlo" created
 ```
 
 3. Create the Pods to connect to PVC
-```
+```sh
 $ kubectl create -f pod-ubuntu-gpu-pvc.yaml
+```
+
+## Use your own docker image
+### Self-hosted registry
+Go to
+```
+https://ntxvm015.iccluster.epfl.ch
+```
+and use your gaspar to login in.
+
+You should first create a project, e.g., `mlo`
+
+### Create
+Go to the `images` folder and run the following cmd to build a new image.
+```sh
+docker-compose build
+```
+You can also add your own configuration in the `Dockerfile`.
+
+### Deploy
+Once you get your image, you can push to the remote host:
+```sh
+docker push ntxvm015.iccluster.epfl.ch/mlo/ml:1.0
+```
+
+Note that you should first login in the self-hosted registry in your console:
+```sh
+docker login ntxvm015.iccluster.epfl.ch
+```
+
+### Run
+Create
+```sh
+$ kubectl create -f pod-ml-pvc.yaml
+pod "ml" created
+```
+
+Connect
+```sh
+$ kubectl exec -it ml -- zsh
+```
+
+Accessing pods from outside of the cluster
+```sh
 ```

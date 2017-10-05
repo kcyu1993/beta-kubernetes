@@ -1,0 +1,7 @@
+version: '2'
+services:
+    mlo_ml:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image:  ntxvm015.iccluster.epfl.ch/mlo/ml:1.0
