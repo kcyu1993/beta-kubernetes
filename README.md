@@ -106,7 +106,7 @@ docker login ntxvm015.iccluster.epfl.ch
 ```
 
 ### Run
-Create
+Create pod and service:
 ```sh
 $ kubectl create -f pod-ml-pvc.yaml
 pod "ml" created
@@ -117,6 +117,19 @@ Connect
 $ kubectl exec -it ml -- zsh
 ```
 
-Accessing pods from outside of the cluster
+> Accessing pods from outside of the cluster `kubectl create -f svc-ml.yaml`
+where the match between your service and the pod is done by the `selector > name` in the yaml file: `kubectl get svc`.
+Note that we create pod and service simultaneously in the file `pod-ml-pvc.yaml`.
+
+Access the service:
 ```sh
+$ kubectl get svc          
+NAME      TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                         AGE
+svc-ml    LoadBalancer   10.96.183.100   <pending>     8888:30380/TCP,6006:30855/TCP   25m
+
+
+$ kubectl get pod pod-ml -o yaml | grep hostIP
+    hostIP: 10.xx.yy.z
+
+$ curl -v http://10.xx.yy.z:30380
 ```

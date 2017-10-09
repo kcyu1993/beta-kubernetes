@@ -76,7 +76,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH \
 # and make sure these dirs are writable by the `users` group.
 ADD fix-permissions /usr/local/bin/fix-permissions
 RUN chmod +x /usr/local/bin/fix-permissions
-RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+RUN useradd -m -s /bin/bash -N -g $NB_GID -u $NB_UID $NB_USER && \
     echo "${NB_USER}:${NB_USER}" | chpasswd && \
     usermod -aG sudo,adm ${NB_USER} && \
     mkdir -p $CONDA_DIR && \
@@ -101,14 +101,6 @@ RUN cd /tmp && \
     $CONDA_DIR/bin/conda config --system --set show_channel_urls true && \
     $CONDA_DIR/bin/conda update --all --quiet --yes && \
     conda clean -tipsy && \
-    fix-permissions $CONDA_DIR
-
-# Install Jupyter Notebook and Hub
-RUN conda install --quiet --yes \
-    'notebook=5.1.*' \
-    'jupyterhub=0.7.*' \
-    'jupyterlab=0.27.*' \
-    && conda clean -tipsy && \
     fix-permissions $CONDA_DIR
 
 # Install Python 3 packages
@@ -141,15 +133,6 @@ RUN conda install --quiet --yes \
     'xlrd'  && \
     conda remove --quiet --yes --force qt pyqt && \
     conda clean -tipsy && \
-    jupyter nbextension enable --py widgetsnbextension --sys-prefix && \
-    fix-permissions $CONDA_DIR
-
-# Install facets which does not have a pip or conda package at the moment
-RUN cd /tmp && \
-    git clone https://github.com/PAIR-code/facets.git && \
-    cd facets && \
-    jupyter nbextension install facets-dist/ --sys-prefix && \
-    rm -rf facets && \
     fix-permissions $CONDA_DIR
 
 # Import matplotlib the first time to build the font cache.
@@ -165,26 +148,20 @@ RUN conda install --quiet --yes \
     fix-permissions $CONDA_DIR
 
 # install torch
-ENV CMAKE_PREFIX_PATH "$(dirname $(which conda))/../"  # [anaconda root directory]
-RUN conda install --quiet --yes numpy pyyaml mkl setuptools cmake gcc cffi
-RUN conda install --quiet --yes -c soumith magma-cuda80  # or magma-cuda75 if CUDA 7.5
-RUN conda install --quiet --yes pytorch torchvision
+# ENV CMAKE_PREFIX_PATH "$(dirname $(which conda))/../"  # [anaconda root directory]
+# RUN conda install --quiet --yes numpy pyyaml mkl setuptools cmake gcc cffi
+# RUN conda install --quiet --yes -c soumith magma-cuda80  # or magma-cuda75 if CUDA 7.5
+# RUN conda install --quiet --yes pytorch torchvision
 
 ############ user: root permission
 USER root
 WORKDIR $HOME/notebooks
 
-# Add local files as late as possible to avoid cache busting
-COPY start.sh /usr/local/bin/
-COPY start-notebook.sh /usr/local/bin/
-COPY start-singleuser.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/*
-COPY jupyter_notebook_config.py /etc/jupyter/
-RUN fix-permissions /etc/jupyter/
+# IPython
+EXPOSE 8888
 
-# Configure container startup
-# ENTRYPOINT ["tini", "--"]
-# CMD ["start-notebook.sh"]
+# TensorBoard
+EXPOSE 6006
 
 ############ user: user permission
 USER $NB_USER
