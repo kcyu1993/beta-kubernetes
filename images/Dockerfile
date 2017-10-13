@@ -63,7 +63,7 @@ RUN wget --quiet https://github.com/krallin/tini/releases/download/v0.10.0/tini 
 ENV MINICONDA_VERSION 4.3.21
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
-    NB_USER=mlo \
+    NB_USER=kyu\
     NB_UID=1000 \
     NB_GID=100 \
     LC_ALL=en_US.UTF-8 \
@@ -163,6 +163,9 @@ RUN conda install --quiet --yes \
     'keras=2.0*' && \
     conda clean -tipsy && \
     fix-permissions $CONDA_DIR
+
+# Pillow
+RUN pip install pillow==3.4.2 
 
 # install torch
 ENV CMAKE_PREFIX_PATH "$(dirname $(which conda))/../"  # [anaconda root directory]
