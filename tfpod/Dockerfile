@@ -1,4 +1,4 @@
-FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
+FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
 MAINTAINER Kaicheng Yu <kaicheng.yu@epfl.ch>
 
 RUN "sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
@@ -76,7 +76,7 @@ RUN pip install \
 ############# Configure environment #######################################
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
-    NB_USER=kyu\
+    NB_USER=kyu \
     NB_UID=1000 \
     NB_GID=100 \
     LC_ALL=en_US.UTF-8 \
