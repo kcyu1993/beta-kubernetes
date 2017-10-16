@@ -52,6 +52,24 @@ RUN pip --no-cache-dir install \
         && \
     python -m ipykernel.kernelspec
 
+###########################################################################
+### Add for keras implementation, may change from code to code
+###########################################################################
+# Install the cpu version of tensorflow
+RUN pip --no-cache-dir install \
+        tensorflow \
+        && \
+    python -m ipykernel.kernelspec
+
+
+RUN pip install \
+        configobj \
+        pyyaml \
+        horovod \
+        && \
+    python -m ipykernel.kernelspec
+
+
 # --- DO NOT EDIT OR DELETE BETWEEN THE LINES --- #
 # These lines will be edited automatically by parameterized_docker_build.sh. #
 # COPY _PIP_FILE_ /
@@ -59,26 +77,19 @@ RUN pip --no-cache-dir install \
 # RUN rm -f /_PIP_FILE_
 
 # Install TensorFlow GPU version.
-RUN pip --no-cache-dir install tensorflow-gpu
+RUN pip --no-cache-dir install tensorflow-gpu \
+    python -m ipykernel.kernelspec
 #    http://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-0.0.0-cp27-none-linux_x86_64.whl
 # --- ~ DO NOT EDIT OR DELETE BETWEEN THE LINES --- #
 
-###########################################################################
-### Add for keras implementation, may change from code to code
-###########################################################################
-RUN pip install \
-        configobj \
-        pyyaml \
-        && \
-    python -m ipykernel.kernelspec
 
 
 ############# Configure environment #######################################
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
     NB_USER=kyu \
-    NB_UID=1000 \
-    NB_GID=100 \
+    NB_UID=168151 \
+    NB_GID=11166 \
     LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
@@ -126,6 +137,9 @@ RUN fix-permissions /etc/jupyter/
 # ENTRYPOINT ["tini", "--"]
 # CMD ["start-notebook.sh"]
 
+# Fix the tty problem
+
+
 ############ user: user permission ##############################
 USER $NB_USER
 
@@ -152,5 +166,3 @@ WORKDIR "/notebooks"
 CMD ["/usr/local/bin/start-notebook.sh", "--allow-root"]
 
 WORKDIR $HOME/
-
-USER root
