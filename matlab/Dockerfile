@@ -14,13 +14,13 @@ RUN "sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
 
 ############ user: root permission
 USER root
-WORKDIR /root
 
 # Pick up some dependencies (for tensorflow only)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         curl \
         libfreetype6-dev \
+        libjpeg-turbo8-dev \
         libpng12-dev \
         libzmq3-dev \
         pkg-config \
@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         software-properties-common \
         sudo \
         unzip \
+        wget \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -42,9 +43,11 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
 
 # Install Matlab 9.1
 # Must be run under VPN network
-RUN curl -s http://install.iccluster.epfl.ch/scripts/soft/matlab/R2016b.sh >> R2016b.sh && \
-    chmod +x R2016b.sh && \
-    ./R2016b.sh
+RUN curl -s http://install.iccluster.epfl.ch/scripts/soft/matlab/R2016b.sh >> /root/R2016b.sh && \
+    chmod +x /root/R2016b.sh && \
+    /root/R2016b.sh
+ENV MATLAB_ROOT=/usr/local/MATLAB/R2016b
+ENV PATH=$MATLAB_ROOT/bin:$PATH
 
 RUN pip --no-cache-dir install \
         Pillow==3.4.2 \
@@ -66,26 +69,26 @@ RUN pip --no-cache-dir install \
 # RUN rm -f /_PIP_FILE_
 
 # Install TensorFlow GPU version.
-RUN pip --no-cache-dir install tensorflow-gpu
+#RUN pip --no-cache-dir install tensorflow-gpu
 #    http://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-0.0.0-cp27-none-linux_x86_64.whl
 # --- ~ DO NOT EDIT OR DELETE BETWEEN THE LINES --- #
 
 ###########################################################################
 ### Add for keras implementation, may change from code to code
 ###########################################################################
-RUN pip install \
-        configobj \
-        pyyaml \
-        && \
-    python -m ipykernel.kernelspec
+#RUN pip install \
+#        configobj \
+#        pyyaml \
+#        && \
+#    python -m ipykernel.kernelspec
 
 
 ############# Configure environment #######################################
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
     NB_USER=kyu \
-    NB_UID=1000 \
-    NB_GID=100 \
+    NB_UID=168151 \
+    NB_GID=11166 \
     LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8
