@@ -132,9 +132,18 @@ RUN chmod +x /usr/local/bin/*
 COPY jupyter_notebook_config.py /etc/jupyter/
 RUN fix-permissions /etc/jupyter/
 
-# Configure container startup
-# ENTRYPOINT ["tini", "--"]
-# CMD ["start-notebook.sh"]
+# Add remaining dependencies for matlab (for minimum change for docker)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libxt6 \
+    libxtst6 \
+    locales \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Fix the locale issue
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 ############ user: user permission ##############################
 USER $NB_USER
