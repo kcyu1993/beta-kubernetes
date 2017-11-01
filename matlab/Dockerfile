@@ -1,4 +1,4 @@
-FROM nvidia/cuda:7.5-cudnn5-devel-ubuntu14.04
+FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
 MAINTAINER Kaicheng Yu <kaicheng.yu@epfl.ch>
 
 RUN "sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
@@ -136,13 +136,13 @@ RUN fix-permissions /etc/jupyter/
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libxt6 \
     libxtst6 \
+    libxrandr2 \
     locales \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Fix the locale issue
-
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 ############ user: user permission ##############################
@@ -172,4 +172,15 @@ CMD ["/usr/local/bin/start-notebook.sh", "--allow-root"]
 
 WORKDIR $HOME/
 
+# fix the libstdc++ version problem
 USER root
+
+ENV MATLAB_LIB=/usr/local/MATLAB/R2016b/sys/os/glnxa64/ \
+    SYSTEM_LIB=/usr/lib/x86_64-linux-gnu/
+#RUN mv $MATLAB_LIB/libstdc++.so.6.20 $MATLAB_LIB/bak-libstdc++.so.6.20 && \
+#    mv $MATLAB_LIB/libstdc++.so.6 $MATLAB_LIB/bak-libstdc++.so.6 && \
+#    ln -sf $SYSTEM_LIB/libstdc++.so.6.0.21 $MATLAB_LIB/libstdc++.so.6.0.21 && \
+#    ln -sf $MATLAB_LIB/libstdc++.so.6.0.21 $MATLAB_LIB/libstdc++.so.6
+
+WORKDIR $HOME/
+
