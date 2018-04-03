@@ -1,4 +1,4 @@
-FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
+FROM nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
 MAINTAINER Kaicheng Yu <kaicheng.yu@epfl.ch>
 
 RUN "sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
@@ -12,7 +12,11 @@ RUN "sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
 # Create to support k8s deployment and pod commmand
 # Hope it can work!
 
-############ user: root permission
+
+#################################################
+############ user: root permission ##############
+#################################################
+
 USER root
 
 # Pick up some dependencies (for tensorflow only)
@@ -63,23 +67,25 @@ RUN pip --no-cache-dir install \
         && \
     python -m ipykernel.kernelspec
 
-###########################################################################
-### Add for keras implementation, may change from code to code
-###########################################################################
+
+###############################################
+##### Add for keras implementation,  ##########
+##### may change from code to code   ##########
+###############################################
+
 # Install the cpu version of tensorflow
 RUN pip --no-cache-dir install \
-        tensorflow==1.4 \
+        tensorflow \
         && \
     python -m ipykernel.kernelspec
 
-# Install other dependencies. Add here because it will be very fast.
+
 RUN pip install \
         configobj \
-        pytest \
         pyyaml \
+        pytest \
         && \
     python -m ipykernel.kernelspec
-
 
 # --- DO NOT EDIT OR DELETE BETWEEN THE LINES --- #
 # These lines will be edited automatically by parameterized_docker_build.sh. #
@@ -88,14 +94,15 @@ RUN pip install \
 # RUN rm -f /_PIP_FILE_
 
 # Install TensorFlow GPU version.
-RUN pip --no-cache-dir install tensorflow-gpu==1.4 &&\
+RUN pip --no-cache-dir install tensorflow-gpu &&\
     python -m ipykernel.kernelspec
 #    http://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-0.0.0-cp27-none-linux_x86_64.whl
 # --- ~ DO NOT EDIT OR DELETE BETWEEN THE LINES --- #
 
 
-
-############# Configure environment #######################################
+#################################################
+############# Configure environment #############
+#################################################
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
     NB_USER=kyu \
@@ -107,8 +114,8 @@ ENV CONDA_DIR=/opt/conda \
 ENV PATH=$CONDA_DIR/bin:$PATH \
     HOME=/home/$NB_USER
 
-# Create user with UID=1000 and in the 'users' group
-# and make sure these dirs are writable by the `users` group.
+# Create user with UID=NB_UID and in the 'NB_GID' group
+# and make sure these dirs are writable by the `NB_GID` group.
 ADD fix-permissions /usr/local/bin/fix-permissions
 RUN chmod +x /usr/local/bin/fix-permissions
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
@@ -119,21 +126,6 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     fix-permissions $HOME && \
     fix-permissions $CONDA_DIR
 
-############ user: user permission
-USER $NB_USER
-
-# Setup work directory for backward-compatibility
-RUN mkdir $HOME/notebooks && fix-permissions $HOME
-
-# Import matplotlib the first time to build the font cache.
-ENV XDG_CACHE_HOME $HOME/.cache/
-RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
-    fix-permissions $HOME
-
-
-
-############ user: root permission ##############################
-USER root
 WORKDIR $HOME/notebooks
 
 # Add local files as late as possible to avoid cache busting
@@ -148,11 +140,19 @@ RUN fix-permissions /etc/jupyter/
 # ENTRYPOINT ["tini", "--"]
 # CMD ["start-notebook.sh"]
 
-# Fix the tty problem
 
-
-############ user: user permission ##############################
+#################################################
+############ user: user permission ##############
+#################################################
 USER $NB_USER
+
+# Setup work directory for backward-compatibility
+RUN fix-permissions $HOME
+
+# Import matplotlib the first time to build the font cache.
+ENV XDG_CACHE_HOME $HOME/.cache/
+RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
+    fix-permissions $HOME
 
 # Set up our notebook config.
 COPY jupyter_notebook_config.py /root/.jupyter/
